@@ -36,3 +36,38 @@
     }
   }
 }
+
+.conributions-page {
+  .faqs {
+    li {
+      .small {
+        color: $grey;
+        display: block;
+      }
+
+      button {
+        &:after {
+          font-family: FontAwesome;
+        }
+
+        &.thumbs-up:after {
+          content: '\f164';
+        }
+
+        &.thumbs-down:after {
+          content: '\f088';
+        }
+      }
+
+    }
+  }
+}
+
+.contribution-cta {
+  position: sticky;
+  width: 100%;
+  bottom: 0;
+  height: 50px;
+  background: cyan;
+  z-index: 99;
+}

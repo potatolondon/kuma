@@ -1,4 +1,4 @@
-(function(win, doc, $, StripeCheckout) {
+(function($, StripeCheckout) {
   'use strict';
   var form = $("#contribute-form"),
   nameInput = form.find("#name"),
@@ -44,4 +44,4 @@
   form.submit(onSubmit);
 
   // Destroy event handlers
-})(window, document, jQuery, StripeCheckout);
+})(jQuery, StripeCheckout);
