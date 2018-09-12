@@ -1,6 +1,7 @@
 (function(win, doc, $, StripeCheckout) {
     'use strict';
 
+    // TODO: handle this better
     var isMobile = $('main').width() < 800;
 
     $('#id_email').tooltip({
