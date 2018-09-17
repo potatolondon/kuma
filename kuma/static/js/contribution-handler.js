@@ -4,7 +4,6 @@
     // TODO: handle this better
     var isMobile = $('main').width() < 800;
 
-    
     if ($().tooltip) {
         var tooltipButton = $('#email-tooltip');
         tooltipButton.tooltip({
@@ -52,7 +51,7 @@
     });
 
     // Is CTA? 
-    var isCta = $('.contribution-form').hasClass('cta');
+    var isCta = $('.contribution-form').hasClass('contribution-popover');
     if (isCta) {
         var cta = $('.contribution-form'),
             collapseButton = cta.find('#collapse'),
@@ -102,11 +101,9 @@
             // reset radio when selecting custom amount
             form.find('input[type=\'radio\']:checked').prop('checked', false);
         }
-
         
         selectedAmount = (Math.floor(ev.target.value * 100) / 100);
         var newValue = (selectedAmount < 1 || isNaN(selectedAmount)) ? '' : '$' + selectedAmount;
-
 
         amount.html(newValue);
     }
