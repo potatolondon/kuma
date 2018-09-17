@@ -1,5 +1,5 @@
-<div class="contribution-form contribution-banner {% if is_cta %}contribution-popover collapsed{% endif %}">
-    {% if is_cta %}
+<div class="contribution-form contribution-banner {% if is_popover %}contribution-popover collapsed{% endif %}">
+    {% if is_popover %}
         <div class="actions">
             <button id="collapse" class="hide-collapse" type="button"> {% include 'includes/icons/arrows/chevron-down.svg' %} </button>
             <button id="close-cta" type="button"> {% include 'includes/icons/general/close.svg' %} </button>
@@ -14,7 +14,7 @@
                 </h2>
                 <h4>{{_('We need your help to grow to the next stage.')}}</h4>
                 <p class="body">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud.</p>
-                {% if is_cta %}
+                {% if is_popover %}
                     <div class="button-group">
                         <a href="{{url('contribute')}}" class="cta-link">
                             {{_('Learn More')}} {% include 'includes/icons/arrows/arrow.svg' %}
