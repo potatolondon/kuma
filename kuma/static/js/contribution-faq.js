@@ -2,10 +2,10 @@
 (function($) {
     'use strict';
 
-    var FAQ = $('#contributions-page'),
-        thumbsUp = FAQ.find('.thumbs-up'),
-        thumbsDown = FAQ.find('.thumbs-down'),
-        faqFeedback = FAQ.find('#faq-feedback');
+    var faqContainer = $('#contributions-page'),
+        thumbsUp = faqContainer.find('.thumbs-up'),
+        thumbsDown = faqContainer.find('.thumbs-down'),
+        faqFeedback = faqContainer.find('#faq-feedback');
     
     function sendAnalyticsVoteEvent(action, label ,value) {
         var event = {
