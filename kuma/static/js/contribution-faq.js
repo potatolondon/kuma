@@ -1,7 +1,7 @@
 
 (function($) {
     'use strict';
-    
+
     var FAQ = $('#contributions-page'),
         thumbsUp = FAQ.find('.thumbs-up'),
         thumbsDown = FAQ.find('.thumbs-down'),
