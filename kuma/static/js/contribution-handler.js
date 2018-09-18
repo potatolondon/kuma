@@ -1,7 +1,7 @@
 (function(doc, win, $) {
     'use strict';
 
-    // Quit here if contributions is disabled.
+    // Quit here if contributions are disabled.
     if (!win.mdn.contributions) {
         return;
     }
@@ -65,15 +65,11 @@
             ctaCollapsedHeight = cta.height(),
             ctaHeight = 400;
 
-        if(win.mdn.features.localStorage) {
-            try {
-                var hideCta = localStorage.getItem('hideCTA');
-                if (hideCta) {
-                    cta.addClass('hidden');
-                }
-            }
-            catch (e) {
-                // Browser doesn't support Local Storage
+        if (win.mdn.features.localStorage) {
+            var hideCta = localStorage.getItem('hideCTA');
+
+            if (hideCta) {
+                cta.addClass('hidden');
             }
         }
     }
@@ -170,6 +166,7 @@
 
         //  Remove collapsed state
         cta.removeClass('collapsed');
+        cta.attr('aria-expanded', true);
 
         // Expand CTA
         cta.animate({height: ctaHeight}, 500, function() {
@@ -192,6 +189,7 @@
         cta.height(ctaHeight);
         // Add Transitional class for opacity animation
         cta.addClass('collapsing');
+        cta.attr('aria-expanded', false);
 
         // Minimise CTA
         cta.animate({height: ctaCollapsedHeight}, 500, function() {
@@ -202,15 +200,11 @@
     }
 
     function removeCta() {
-        if(win.mdn.features.localStorage) {
-            try {
-                cta.addClass('hidden');
-                localStorage.setItem('hideCTA', true);
-            }
-            catch (e) {
-                // Browser doesn't support Local Storage
-            }
+        cta.addClass('hidden');
+        cta.attr('aria-hidden', true);
 
+        if (win.mdn.features.localStorage) {
+            localStorage.setItem('hideCTA', true);
         }
     }
 
