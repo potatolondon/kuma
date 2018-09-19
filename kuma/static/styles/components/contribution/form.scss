@@ -125,7 +125,7 @@
             }
         }
 
-        input[name='donation_amount'] {
+        .form-input-amount {
             padding-left: 35px;
         }
 
@@ -135,8 +135,8 @@
             margin-top: 33px;
         }
 
-        input[name='donation_amount'],
-        #id_donation_choices {
+        .form-input-amount,
+        .form-radios-donation-choices {
             width: 49%;
             display: inline-block;
             vertical-align: middle;
@@ -151,7 +151,7 @@
         }
     }
 
-    #id_donation_choices {
+    .form-radios-donation-choices {
         li {
             display: inline-block;
             position: relative;
@@ -162,7 +162,7 @@
                 width: auto;
             }
 
-            input[type=radio] {
+            input[type='radio'] {
                 position: absolute;
                 opacity: 0;
                 cursor: pointer;
