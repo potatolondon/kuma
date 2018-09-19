@@ -1,8 +1,8 @@
-<div class="contribution-form contribution-banner {% if is_popover %}contribution-popover collapsed{% endif %}"{% if is_popover %} aria-expanded="false" aria-hidden="false"{% endif %}>
+<div class="contribution-banner {% if is_popover %}contribution-popover is-collapsed{% endif %}"{% if is_popover %} aria-expanded="false" aria-hidden="false"{% endif %}>
     {% if is_popover %}
-        <div class="actions">
-            <button id="collapse" class="hide-collapse" aria-label="{{ _('Collapse pop over window') }}">{% include 'includes/icons/arrows/chevron-down.svg' %}</button>
-            <button id="close-cta" aria-label="{{ _('Close pop over window') }}">{% include 'includes/icons/general/close.svg' %}</button>
+        <div class="contribution-popover-actions">
+            <button id="collapse-popover-button" class="hide-collapse" aria-label="{{ _('Collapse pop over window') }}">{% include 'includes/icons/arrows/chevron-down.svg' %}</button>
+            <button id="close-popover-button" aria-label="{{ _('Close pop over window') }}">{% include 'includes/icons/general/close.svg' %}</button>
         </div>
     {% endif %}
     <div class="column-container">
@@ -34,7 +34,7 @@
             </div>
         </div>
         <div class="column-half">
-            <form id="contribute-form" class="container" method="post" action="{{ url('contribute') }}" novalidate>
+            <form id="contribute-form" class="contribution-form container" method="post" action="{{ url('contribute') }}" novalidate>
                 {% csrf_token %}
                 <div class="form-group">
                     {{form.name}}
@@ -75,9 +75,9 @@
                         </span>
                     </button>
                     <div class="payment-details">
-                        <img src="{{ static('img/payment-type-mastercard-1x.png') }}" srcset="{{ static('img/payment-type-mastercard-1x.png') }}, {{ static('img/payment-type-mastercard-2x.png') }} 2x" alt="{{ _('We accept Mastercard payments') }}">
-                        <img src="{{ static('img/payment-type-visa-1x.png') }}" srcset="{{ static('img/payment-type-visa-1x.png') }}, {{ static('img/payment-type-visa-2x.png') }} 2x" alt="{{ _('We accept Visa payments') }}">
-                        <img src="{{ static('img/payment-type-american-express-1x.png') }}" srcset="{{ static('img/payment-type-american-express-1x.png') }}, {{ static('img/payment-type-american-express-2x.png') }} 2x" alt="{{ _('We accept American Express payments') }}">
+                        <img src="{{ static('img/payment-type-mastercard-1x.png') }}" srcset="{{ static('img/payment-type-mastercard-1x.png') }}, {{ static('img/payment-type-mastercard-2x.png') }} 2x" alt="{{ _('We accept Mastercard payments') }}" title="{{ _('We accept Mastercard payments') }}">
+                        <img src="{{ static('img/payment-type-visa-1x.png') }}" srcset="{{ static('img/payment-type-visa-1x.png') }}, {{ static('img/payment-type-visa-2x.png') }} 2x" alt="{{ _('We accept Visa payments') }}" title="{{ _('We accept Visa payments') }}">
+                        <img src="{{ static('img/payment-type-american-express-1x.png') }}" srcset="{{ static('img/payment-type-american-express-1x.png') }}, {{ static('img/payment-type-american-express-2x.png') }} 2x" alt="{{ _('We accept American Express payments') }}" title="{{ _('We accept American Express payments') }}">
                     </div>
 
                     <a class="button mobile-link" href="{{ url('contribute') }}">

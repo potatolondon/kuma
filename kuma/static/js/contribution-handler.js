@@ -119,22 +119,22 @@
         });
     }
 
-    var form = $('#contribute-form'),
-        // Inputs
-        emailField = form.find('#id_email'),
-        nameField = form.find('#id_name'),
-        defaultAmount = form.find('input[type=\'radio\']:checked'),
-        amountRadio = form.find('input[name=donation_choices]'),
-        customAmountInput = form.find('#id_donation_amount'),
-        // Hidden fields
-        stripePublicKey = form.find('#id_stripe_public_key'),
-        stripeToken = form.find('#id_stripe_token'),
-        // Other
-        formButton = form.find('#stripe_submit'),
-        amount = formButton.find('#amount');
+    var form = $('#contribute-form');
+    // Inputs
+    var emailField = form.find('#id_email');
+    var nameField = form.find('#id_name');
+    var defaultAmount = form.find('input[type=\'radio\']:checked');
+    var amountRadio = form.find('input[name=donation_choices]');
+    var customAmountInput = form.find('#id_donation_amount');
+    // Hidden fields
+    var stripePublicKey = form.find('#id_stripe_public_key');
+    var stripeToken = form.find('#id_stripe_token');
+    // Other
+    var formButton = form.find('#stripe_submit');
+    var amount = formButton.find('#amount');
 
     // init stripeCheckout handler
-    var handler = win.StripeCheckout.configure({
+    var stripeHandler = win.StripeCheckout.configure({
         key: stripePublicKey.val(),
         locale: 'en',
         name: 'MDN Web Docs',
@@ -145,27 +145,29 @@
         }
     });
 
-    // Is CTA?
-    var isCta = $('.contribution-form').hasClass('contribution-popover');
-    if (isCta) {
-        var cta = $('.contribution-form'),
-            collapseButton = cta.find('#collapse'),
-            closeButton = cta.find('#close-cta'),
-            ctaCollapsedHeight = cta.height(),
-            ctaHeight = 480;
+    var isPopoverBanner = $('.contribution-banner').hasClass('contribution-popover');
+
+    if (isPopoverBanner) {
+        var popoverBanner = $('.contribution-banner');
+        var collapseButton = popoverBanner.find('#collapse-popover-button');
+        var closeButton = popoverBanner.find('#close-popover-button');
+        var ctaCollapsedHeight = popoverBanner.height();
+        var ctaHeight = 480;
 
         if (win.mdn.features.localStorage) {
             var hideCta = localStorage.getItem('hideCTA');
 
             if (hideCta) {
-                cta.addClass('hidden');
+                popoverBanner.addClass('hidden');
             }
         }
     }
 
     // Set initial radio state
     defaultAmount.parent().addClass('active');
+
     var selectedAmount = defaultAmount.length ? defaultAmount[0].value : 0;
+
     customAmountInput.val('');
 
     // Set errors
@@ -203,6 +205,7 @@
     function setFieldError(field) {
         $(field).addClass('error');
         $(field).next('.errorlist').remove();
+
         var error = $(field).attr('data-error-message');
 
         $('<ul class="errorlist"><li>' + error + '</li></ul>').insertAfter($(field));
@@ -214,24 +217,53 @@
         $(field).next('.errorlist').remove();
     }
 
-    // Validate email and name inputs
-    function onChange(ev) {
-        var field = $(ev.target)[0];
-        field.checkValidity() ?  clearFieldError(field) : setFieldError(field);
+    /**
+     * Checks field validity and sets any errors if required.
+     * @param {jQuery.Event} event Event object.
+     */
+    function onChange(event) {
+        var field = $(event.target)[0];
+
+        if (field.checkValidity()) {
+            clearFieldError(field);
+        } else {
+            setFieldError(field);
+        }
     }
 
+    /**
+     * Handles the form submit. Checks for field validity using built in browser
+     * checkValidity functionality and then attempts to open the Stripe modal if
+     * the form is valid.
+     */
     function onSubmit() {
         // FE form validation
         var valid = form[0].checkValidity();
+
         if (!valid || (selectedAmount < 1 || isNaN(selectedAmount))) {
-            emailField[0].checkValidity() ?  clearFieldError(emailField[0]) : setFieldError(emailField[0]);
-            nameField[0].checkValidity() ? clearFieldError(nameField[0]) : setFieldError(nameField[0]);
-            selectedAmount >= 1 ? clearFieldError(customAmountInput) : setFieldError(customAmountInput);
+            if (emailField[0].checkValidity()) {
+                clearFieldError(emailField[0]);
+            } else {
+                setFieldError(emailField[0]);
+            }
+
+            if (nameField[0].checkValidity()) {
+                clearFieldError(nameField[0]);
+            } else {
+                setFieldError(nameField[0]);
+            }
+
+            if (selectedAmount >= 1) {
+                clearFieldError(customAmountInput);
+            } else {
+                setFieldError(customAmountInput);
+            }
+
             return;
         }
 
-        // on success open Stripe Checkout modal
-        handler.open({
+        // On success open Stripe Checkout modal.
+        stripeHandler.open({
             image: 'https://avatars1.githubusercontent.com/u/7565578?s=280&v=4',
             name: 'MDN Web Docs',
             description: 'Contribute to MDN Web Docs',
@@ -244,53 +276,73 @@
         });
     }
 
+    /**
+     * Handles the form button click. This will either attempt to submit the form
+     * or will expand the popover depending on the current state of the popover.
+     */
     function onFormButtonClick() {
         // Calculate the role of the submit button
-        isCta && cta.hasClass('collapsed') ? expandCta() : onSubmit();
+        if (isPopoverBanner && popoverBanner.hasClass('is-collapsed')) {
+            expandCta();
+        } else {
+            onSubmit();
+        }
     }
 
+    /**
+     * Expands the popover to show the full contents.
+     */
     function expandCta() {
-        // Force style="height: <CTA HEIGHT>"
-        cta.height(ctaCollapsedHeight);
+        popoverBanner.height(ctaCollapsedHeight);
 
-        //  Remove collapsed state
-        cta.removeClass('collapsed');
-        cta.attr('aria-expanded', true);
+        // Remove collapsed state.
+        popoverBanner.removeClass('is-collapsed');
+        popoverBanner.attr('aria-expanded', true);
 
-        // Expand CTA
-        cta.animate({height: ctaHeight}, 500, function() {
-            cta.css('height', 'auto');
-            // listen to minimise button clicks
+        // Expand CTA.
+        popoverBanner.animate({ height: ctaHeight }, 500, function() {
+            popoverBanner.css('height', 'auto');
+
+            // listen to minimise button clicks.
             collapseButton.click(collapseCta);
-            $(doc).keyup(function(e) {
-                if (e.keyCode === 27) { // escape key maps to keycode `27`
+
+            $(doc).on('keydown.popoverCloseHandler', function(event) {
+                if (event.keyCode === 27) { // Escape key.
                     collapseCta();
                 }
             });
         });
     }
 
+    /**
+     * Collapses popover.
+     */
     function collapseCta() {
         // ignore clicks while collapsing
         collapseButton.off();
         // Force style="height: <CTA HEIGHT>"
-        ctaHeight = cta.height();
-        cta.height(ctaHeight);
+        ctaHeight = popoverBanner.height();
+        popoverBanner.height(ctaHeight);
         // Add Transitional class for opacity animation
-        cta.addClass('collapsing');
-        cta.attr('aria-expanded', false);
+        popoverBanner.addClass('is-collapsing');
+        popoverBanner.attr('aria-expanded', false);
 
         // Minimise CTA
-        cta.animate({height: ctaCollapsedHeight}, 500, function() {
-            cta.addClass('collapsed');
-            cta.css('height', 'auto');
-            cta.removeClass('collapsing');
+        popoverBanner.animate({ height: ctaCollapsedHeight }, 500, function() {
+            popoverBanner.addClass('is-collapsed');
+            popoverBanner.css('height', 'auto');
+            popoverBanner.removeClass('is-collapsing');
         });
+
+        $(doc).off('keydown.popoverCloseHandler');
     }
 
+    /**
+     * Removes the popover from the page and stores the hidden state in local storge.
+     */
     function removeCta() {
-        cta.addClass('hidden');
-        cta.attr('aria-hidden', true);
+        popoverBanner.addClass('hidden');
+        popoverBanner.attr('aria-hidden', true);
 
         if (win.mdn.features.localStorage) {
             localStorage.setItem('hideCTA', true);
@@ -305,10 +357,9 @@
     emailField.blur(onChange);
     nameField.blur(onChange);
 
-    if (isCta) {
+    if (isPopoverBanner) {
         closeButton.click(removeCta);
     }
 
     setupTooltips();
-
 })(document, window, jQuery);
