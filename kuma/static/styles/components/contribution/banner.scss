@@ -43,6 +43,11 @@
                 padding-top: 20px;
             }
         }
+
+        @media #{$mq-mobile-and-down} {
+            // Make sure the banner popover never shows on mobile.
+            display: none;
+        }
     }
 
     .contribution-popover-actions {
@@ -86,7 +91,7 @@
         max-width: 1320px;
         padding: 54px 20px;
 
-        @media #{$mq-tablet-and-down} {
+        @media #{$mq-mobile-and-down} {
             padding: 20px;
         }
     }
