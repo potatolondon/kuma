@@ -295,6 +295,9 @@
     function expandCta() {
         popoverBanner.height(ctaCollapsedHeight);
 
+        // Add Transitional class for opacity animation
+        popoverBanner.addClass('is-expanding');
+
         // Remove collapsed state.
         popoverBanner.removeClass('is-collapsed');
         popoverBanner.attr('aria-expanded', true);
@@ -302,6 +305,7 @@
         // Expand CTA.
         popoverBanner.animate({ height: ctaHeight }, 500, function() {
             popoverBanner.css('height', 'auto');
+            popoverBanner.removeClass('is-expanding');
 
             // listen to minimise button clicks.
             collapseButton.click(collapseCta);
