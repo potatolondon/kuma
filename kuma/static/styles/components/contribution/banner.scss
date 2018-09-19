@@ -25,17 +25,17 @@
 .contribution-banner {
     background-image: $contribution-background-gradient;
     min-width: 320px;
-    position: relative;
     overflow: hidden;
+    position: relative;
 
     // Additional styling for when the banner acts a popover and is fixed to the
     // bottom of the viewport.
     &.contribution-popover {
+        bottom: 0;
         box-shadow: 0 0 5px 0 rgba(0, 0, 0, .25);
         position: fixed;
-        z-index: 99;
-        bottom: 0;
         width: 100%;
+        z-index: 99;
 
         &.is-collapsed {
             .column-container {
@@ -52,9 +52,9 @@
 
     .contribution-popover-actions {
         position: absolute;
+        right: 10px;
         text-align: right;
         top: 10px;
-        right: 10px;
         z-index: 10;
 
         button {
@@ -69,13 +69,13 @@
             }
 
             > svg {
-                width: 30px;
                 height: 30px;
+                width: 30px;
             }
 
             &:last-of-type > svg {
-                width: 20px;
                 height: 20px;
+                width: 20px;
             }
         }
     }
@@ -101,8 +101,8 @@
     }
 
     .subtext {
-        max-width: 600px;
         margin: 2em auto;
+        max-width: 600px;
     }
 
     // Mozilla dino background image.
@@ -127,8 +127,8 @@
     .body,
     .cta-link,
     .form-group {
-        animation-name: fadeIn;
         animation-duration: .6s;
+        animation-name: fadeIn;
     }
 
     &.is-collapsed {
@@ -152,8 +152,8 @@
         .body,
         .cta-link,
         .form-group {
-            animation-name: fadeOut;
             animation-duration: .6s;
+            animation-name: fadeOut;
         }
     }
 
