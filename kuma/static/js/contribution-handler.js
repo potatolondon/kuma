@@ -71,7 +71,7 @@
             mdn.analytics.trackEvent({
                 category: 'Contribution popover',
                 action: 'Tooltip Closed',
-                value: 1,
+                value: 1
             });
         }
 
@@ -194,7 +194,7 @@
     });
 
     // Ensure we only show the form if js is enabled
-    if(win.StripeCheckout) {
+    if (win.StripeCheckout) {
         $('#contribution-popover-container').removeClass('hidden');
     }
 
@@ -244,7 +244,7 @@
             mdn.analytics.trackEvent({
                 category: 'Contribution popover',
                 action: 'Amount radio selected',
-                value: event.target.value,
+                value: event.target.value
             });
 
             $(event.target).parent().addClass('active');
@@ -273,11 +273,11 @@
 
         $('<ul class="errorlist"><li>' + error + '</li></ul>').insertAfter($(field));
 
-        if($(field).is('#id_donation_amount')) {
+        if ($(field).is('#id_donation_amount')) {
             mdn.analytics.trackEvent({
                 category: 'Contribution popover',
                 action: 'Invalid amount selected',
-                value: 1,
+                value: 1
             });
         }
     }
@@ -340,7 +340,7 @@
         mdn.analytics.trackEvent({
             category: 'Contribution submission',
             action: isPopoverBanner ? 'On Popover' : 'On Page',
-            value: 1,
+            value: 1
         });
 
         // On success open Stripe Checkout modal.
@@ -414,7 +414,7 @@
         mdn.analytics.trackEvent({
             category: 'Contribution popover',
             action: 'collapse',
-            value: 1,
+            value: 1
         });
 
         // Collapse popover.
@@ -438,7 +438,7 @@
         mdn.analytics.trackEvent({
             category: 'Contribution popover',
             action: 'close',
-            value: 1,
+            value: 1
         });
 
         if (win.mdn.features.localStorage) {
@@ -463,7 +463,7 @@
         mdn.analytics.trackEvent({
             category: 'Contribution popover',
             action: 'Amount manually selected',
-            value: event.target.value,
+            value: event.target.value
         });
     });
 
@@ -477,7 +477,7 @@
     mdn.analytics.trackEvent({
         category: 'Contribution banner',
         action: 'shown',
-        value: 1,
+        value: 1
     });
 
 })(document, window, jQuery);
