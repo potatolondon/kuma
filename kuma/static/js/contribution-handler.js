@@ -7,6 +7,13 @@
     }
 
     /**
+     * Expiration date for how long the contributions modal should be hidden for
+     * after it's been disabled by clicking the close button.
+     * @const
+     */
+    var CONTROBUTIONS_DISABLED_EXPIRATION =  5 * 24 * 60 * 60 * 1000; // 5 days.
+
+    /**
      * Handles setting up and binding events for tooltips.
      */
     function setupTooltips() {
@@ -119,21 +126,48 @@
         });
     }
 
+    /**
+     * Runs on page load and checks the localStorage item timestamp to see if
+     * it's expired yet and we can show the popover again.
+     */
+    function checkPopoverDisabled() {
+        if (win.mdn.features.localStorage) {
+            var disabledStorageItem = localStorage.getItem('contributionsPopoverDisabled');
+            var date = new Date().getTime();
+
+            if (disabledStorageItem) {
+                // Parses the stringified storage item
+                disabledStorageItem = JSON.parse(disabledStorageItem);
+
+                if (disabledStorageItem.value) {
+                    if (disabledStorageItem.timestamp + CONTROBUTIONS_DISABLED_EXPIRATION > date) {
+                        // Keep the popover hidden if we aren't passed the expiration date yet.
+                        popoverBanner.addClass('hidden');
+                        popoverBanner.attr('aria-hidden', true);
+                    } else {
+                        // Remove the item if it has expired.
+                        localStorage.removeItem('contributionsPopoverDisabled');
+                    }
+                }
+            }
+        }
+    }
+
     var form = $('#contribute-form');
-    // Inputs
+    // Inputs.
     var emailField = form.find('#id_email');
     var nameField = form.find('#id_name');
     var defaultAmount = form.find('input[type=\'radio\']:checked');
     var amountRadio = form.find('input[name=donation_choices]');
     var customAmountInput = form.find('#id_donation_amount');
-    // Hidden fields
+    // Hidden fields.
     var stripePublicKey = form.find('#id_stripe_public_key');
     var stripeToken = form.find('#id_stripe_token');
-    // Other
+    // Other.
     var formButton = form.find('#stripe_submit');
     var amount = formButton.find('#amount');
 
-    // init stripeCheckout handler
+    // init stripeCheckout handler.
     var stripeHandler = win.StripeCheckout.configure({
         key: stripePublicKey.val(),
         locale: 'en',
@@ -151,57 +185,57 @@
         var popoverBanner = $('.contribution-banner');
         var collapseButton = popoverBanner.find('#collapse-popover-button');
         var closeButton = popoverBanner.find('#close-popover-button');
-        var ctaCollapsedHeight = popoverBanner.height();
-        var ctaHeight = 480;
+        var popoverCollapsedHeight = popoverBanner.height();
+        var popoverHeight = 480;
 
-        if (win.mdn.features.localStorage) {
-            var hideCta = localStorage.getItem('hideCTA');
-
-            if (hideCta) {
-                popoverBanner.addClass('hidden');
-            }
-        }
+        checkPopoverDisabled();
     }
 
-    // Set initial radio state
+    // Set initial radio state.
     defaultAmount.parent().addClass('active');
 
     var selectedAmount = defaultAmount.length ? defaultAmount[0].value : 0;
 
     customAmountInput.val('');
 
-    // Set errors
+    // Set errors.
     form.find('.errorlist').prev().addClass('error');
 
-    function onAmountSelect(ev) {
-        // Fires when a radio amount or custom amount input is changed.
-
+    /**
+     * Handles adjusting amount.
+     * @param {jQuery.Event} event Event object.
+     */
+    function onAmountSelect(event) {
         form.find('label.active').removeClass('active');
+
         clearFieldError(customAmountInput);
 
-        // Validate against minimum value
-        // TODO: set minimum as a env varible
-        if (parseInt(ev.target.value) < 1 || isNaN(ev.target.value)) {
+        // Validate against minimum value.
+        if (parseInt(event.target.value) < 1 || isNaN(event.target.value)) {
             defaultAmount.prop('checked', true);
             setFieldError(customAmountInput);
         }
 
-        // Reset custom amount input when selecting radio
-        if (ev.target.type === 'radio') {
+        // Reset custom amount input when selecting radio.
+        if (event.target.type === 'radio') {
             customAmountInput.val('');
-            $(ev.target).parent().addClass('active');
+            $(event.target).parent().addClass('active');
         } else {
-            // reset radio when selecting custom amount
+            // Reset radio when selecting custom amount.
             form.find('input[type=\'radio\']:checked').prop('checked', false);
         }
 
-        selectedAmount = (Math.floor(ev.target.value * 100) / 100);
+        selectedAmount = (Math.floor(event.target.value * 100) / 100);
+
         var newValue = (selectedAmount < 1 || isNaN(selectedAmount)) ? '' : '$' + selectedAmount;
 
         amount.html(newValue);
     }
 
-    // Set the error message for any required field
+    /**
+     * Set the error message for any required field.
+     * @param {Element} field Field element.
+     */
     function setFieldError(field) {
         $(field).addClass('error');
         $(field).next('.errorlist').remove();
@@ -211,7 +245,10 @@
         $('<ul class="errorlist"><li>' + error + '</li></ul>').insertAfter($(field));
     }
 
-    // Clear the error message for any required field
+    /**
+     * Clear the error message for any required field.
+     * @param {Element} field Field element.
+     */
     function clearFieldError(field) {
         $(field).removeClass('error');
         $(field).next('.errorlist').remove();
@@ -237,7 +274,7 @@
      * the form is valid.
      */
     function onSubmit() {
-        // FE form validation
+        // FE form validation.
         var valid = form[0].checkValidity();
 
         if (!valid || (selectedAmount < 1 || isNaN(selectedAmount))) {
@@ -293,17 +330,17 @@
      * Expands the popover to show the full contents.
      */
     function expandCta() {
-        popoverBanner.height(ctaCollapsedHeight);
+        popoverBanner.height(popoverCollapsedHeight);
 
-        // Add Transitional class for opacity animation
+        // Add transitional class for opacity animation.
         popoverBanner.addClass('is-expanding');
 
         // Remove collapsed state.
         popoverBanner.removeClass('is-collapsed');
         popoverBanner.attr('aria-expanded', true);
 
-        // Expand CTA.
-        popoverBanner.animate({ height: ctaHeight }, 500, function() {
+        // Expand popover.
+        popoverBanner.animate({ height: popoverHeight }, 500, function() {
             popoverBanner.css('height', 'auto');
             popoverBanner.removeClass('is-expanding');
 
@@ -322,17 +359,15 @@
      * Collapses popover.
      */
     function collapseCta() {
-        // ignore clicks while collapsing
         collapseButton.off();
-        // Force style="height: <CTA HEIGHT>"
-        ctaHeight = popoverBanner.height();
-        popoverBanner.height(ctaHeight);
-        // Add Transitional class for opacity animation
+        popoverHeight = popoverBanner.height();
+        popoverBanner.height(popoverHeight);
+        // Add transitional class for opacity animation.
         popoverBanner.addClass('is-collapsing');
         popoverBanner.attr('aria-expanded', false);
 
-        // Minimise CTA
-        popoverBanner.animate({ height: ctaCollapsedHeight }, 500, function() {
+        // Collapse popover.
+        popoverBanner.animate({ height: popoverCollapsedHeight }, 500, function() {
             popoverBanner.addClass('is-collapsed');
             popoverBanner.css('height', 'auto');
             popoverBanner.removeClass('is-collapsing');
@@ -344,12 +379,18 @@
     /**
      * Removes the popover from the page and stores the hidden state in local storge.
      */
-    function removeCta() {
+    function disablePopover() {
         popoverBanner.addClass('hidden');
         popoverBanner.attr('aria-hidden', true);
 
         if (win.mdn.features.localStorage) {
-            localStorage.setItem('hideCTA', true);
+            var item = JSON.stringify({
+                value: true,
+                // Sets the timestamp to today so we can check its expiration subsequent each page load.
+                timestamp: new Date().getTime()
+            });
+
+            localStorage.setItem('contributionsPopoverDisabled', item);
         }
     }
 
@@ -362,7 +403,7 @@
     nameField.blur(onChange);
 
     if (isPopoverBanner) {
-        closeButton.click(removeCta);
+        closeButton.click(disablePopover);
     }
 
     setupTooltips();
