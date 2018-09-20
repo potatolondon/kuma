@@ -1,5 +1,4 @@
-{% extends "base.html" %}
-
+{% extends 'base.html' %}
 
 {% block body_attributes %}id="contribute"{% endblock %}
 
@@ -12,7 +11,6 @@
 {% endblock %}
 
 {% block extrahead %}
-    {# TODO: Implement copy & design for the share functionality #}
     {% set seo_description = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud.' %}
     {% set social_title = _('Support MDN') %}
     <meta property="og:description" content="{{ seo_description }}">
@@ -32,13 +30,13 @@
 
 {% block content %}
 
-<div id="contributions-page" class="conributions-page" role="main">
-    <section id="contribute-faqs" class="section">
-        <img src="{{ static('img/hero-dino-blank.png') }}" class="backdrop-image" alt="" role="presentation">
+<main id="contributions-page" class="conributions-page" role="main">
+    <section class="section">
+        <img src="{{ static('img/hero-dino-blank.png') }}" class="backdrop-image" alt="" role="presentation" />
         <div class="index">
             <h2>{{_('FAQs')}}</h2>
         </div>
-        <ul class="faqs clear">
+        <ol class="faqs clear">
             <li class="faq">
                 <h3>{{_('Why is MDN asking me for money?')}}</h3>
                 <span class="faq-number">1</span>
@@ -68,8 +66,8 @@
                 </p>
                 <span class="small">{{_('Did this answer your question?')}}</span>
                 <div class="vote-button-group">
-                    <button class="thumbs-up" data-faq="1">{% include 'includes/icons/emojis/thumbs-up.svg' %}</button>
-                    <button class="thumbs-down" data-faq="1">{% include 'includes/icons/emojis/thumbs-down.svg' %}</button>
+                    <button class="thumbs-up" data-faq="1" aria-label="{{ _('Yes, this answered my question') }}">{% include 'includes/icons/emojis/thumbs-up.svg' %}</button>
+                    <button class="thumbs-down" data-faq="1" aria-label="{{ _('No, this did not answer my question') }}">{% include 'includes/icons/emojis/thumbs-down.svg' %}</button>
                 </div>
             </li>
             <li class="faq">
@@ -77,7 +75,7 @@
                 <span class="faq-number">2</span>
                 <p>
                     {% trans %}
-                        Not as likely and not as much. Donations to Mozilla
+                        Not as likely and not as much. Donations to the Mozilla
                         Foundation go to support Mozilla public programs in one
                         general fund, but what you give to MDN stays with MDN
                         and has a direct effect on how much we are able to
@@ -86,8 +84,8 @@
                 </p>
                 <span class="small">{{_('Did this answer your question?')}}</span>
                 <div class="vote-button-group">
-                    <button class="thumbs-up" data-faq="2">{% include 'includes/icons/emojis/thumbs-up.svg' %}</button>
-                    <button class="thumbs-down" data-faq="2">{% include 'includes/icons/emojis/thumbs-down.svg' %}</button>
+                    <button class="thumbs-up" data-faq="2" aria-label="{{ _('Yes, this answered my question') }}">{% include 'includes/icons/emojis/thumbs-up.svg' %}</button>
+                    <button class="thumbs-down" data-faq="2" aria-label="{{ _('No, this did not answer my question') }}">{% include 'includes/icons/emojis/thumbs-down.svg' %}</button>
                 </div>
             </li>
             <li class="faq">
@@ -106,8 +104,8 @@
                 </p>
                 <span class="small">{{_('Did this answer your question?')}}</span>
                 <div class="vote-button-group">
-                    <button class="thumbs-up" data-faq="3">{% include 'includes/icons/emojis/thumbs-up.svg' %}</button>
-                    <button class="thumbs-down" data-faq="3">{% include 'includes/icons/emojis/thumbs-down.svg' %}</button>
+                    <button class="thumbs-up" data-faq="3" aria-label="{{ _('Yes, this answered my question') }}">{% include 'includes/icons/emojis/thumbs-up.svg' %}</button>
+                    <button class="thumbs-down" data-faq="3" aria-label="{{ _('No, this did not answer my question') }}">{% include 'includes/icons/emojis/thumbs-down.svg' %}</button>
                 </div>
             </li>
             <li class="faq">
@@ -131,8 +129,8 @@
                 </ul>
                 <span class="small">{{_('Did this answer your question?')}}</span>
                 <div class="vote-button-group">
-                    <button class="thumbs-up" data-faq="4">{% include 'includes/icons/emojis/thumbs-up.svg' %}</button>
-                    <button class="thumbs-down" data-faq="4">{% include 'includes/icons/emojis/thumbs-down.svg' %}</button>
+                    <button class="thumbs-up" data-faq="4" aria-label="{{ _('Yes, this answered my question') }}">{% include 'includes/icons/emojis/thumbs-up.svg' %}</button>
+                    <button class="thumbs-down" data-faq="4" aria-label="{{ _('No, this did not answer my question') }}">{% include 'includes/icons/emojis/thumbs-down.svg' %}</button>
                 </div>
             </li>
             <li class="faq">
@@ -148,8 +146,8 @@
                 </p>
                 <span class="small">{{_('Did this answer your question?')}}</span>
                 <div class="vote-button-group">
-                    <button class="thumbs-up" data-faq="5">{% include 'includes/icons/emojis/thumbs-up.svg' %}</button>
-                    <button class="thumbs-down" data-faq="5">{% include 'includes/icons/emojis/thumbs-down.svg' %}</button>
+                    <button class="thumbs-up" data-faq="5" aria-label="{{ _('Yes, this answered my question') }}">{% include 'includes/icons/emojis/thumbs-up.svg' %}</button>
+                    <button class="thumbs-down" data-faq="5" aria-label="{{ _('No, this did not answer my question') }}">{% include 'includes/icons/emojis/thumbs-down.svg' %}</button>
                 </div>
             </li>
             <li class="faq">
@@ -163,8 +161,8 @@
                 </p>
                 <span class="small">{{_('Did this answer your question?')}}</span>
                 <div class="vote-button-group">
-                    <button class="thumbs-up" data-faq="6">{% include 'includes/icons/emojis/thumbs-up.svg' %}</button>
-                    <button class="thumbs-down" data-faq="6">{% include 'includes/icons/emojis/thumbs-down.svg' %}</button>
+                    <button class="thumbs-up" data-faq="6" aria-label="{{ _('Yes, this answered my question') }}">{% include 'includes/icons/emojis/thumbs-up.svg' %}</button>
+                    <button class="thumbs-down" data-faq="6" aria-label="{{ _('No, this did not answer my question') }}">{% include 'includes/icons/emojis/thumbs-down.svg' %}</button>
                 </div>
             </li>
             <li class="faq">
@@ -183,8 +181,8 @@
                 </p>
                 <span class="small">{{_('Did this answer your question?')}}</span>
                 <div class="vote-button-group">
-                    <button class="thumbs-up" data-faq="7">{% include 'includes/icons/emojis/thumbs-up.svg' %}</button>
-                    <button class="thumbs-down" data-faq="7">{% include 'includes/icons/emojis/thumbs-down.svg' %}</button>
+                    <button class="thumbs-up" data-faq="7" aria-label="{{ _('Yes, this answered my question') }}">{% include 'includes/icons/emojis/thumbs-up.svg' %}</button>
+                    <button class="thumbs-down" data-faq="7" aria-label="{{ _('No, this did not answer my question') }}">{% include 'includes/icons/emojis/thumbs-down.svg' %}</button>
                 </div>
             </li>
             <li class="faq">
@@ -199,11 +197,11 @@
                 </p>
                 <span class="small">{{_('Did this answer your question?')}}</span>
                 <div class="vote-button-group">
-                    <button class="thumbs-up" data-faq="8">{% include 'includes/icons/emojis/thumbs-up.svg' %}</button>
-                    <button class="thumbs-down" data-faq="8">{% include 'includes/icons/emojis/thumbs-down.svg' %}</button>
+                    <button class="thumbs-up" data-faq="8" aria-label="{{ _('Yes, this answered my question') }}">{% include 'includes/icons/emojis/thumbs-up.svg' %}</button>
+                    <button class="thumbs-down" data-faq="8" aria-label="{{ _('No, this did not answer my question') }}">{% include 'includes/icons/emojis/thumbs-down.svg' %}</button>
                 </div>
             </li>
-        </ul>
+        </ol>
     </section>
     <section class="section">
         <div class="index">
@@ -211,12 +209,11 @@
         </div>
         <div id="contribute-feedback" class="faqs clear feedback">
             <form id="faq-feedback" class="faq-feedback">
-                <h3>{{_('Is there anything else you’d like to know more about?')}}</h3>
+                <h3><label for="faq3">{{_('Is there anything else you’d like to know more about?')}}</label></h3>
                 <textarea data-action="FAQ Any other questions" placeholder="{{_('Your feedback goes here')}}" name="faq3" id="faq3" cols="30" rows="2"></textarea>
                 <button type="submit"> {{_('Send')}} {% include 'includes/icons/arrows/arrow.svg' %}</button>
             </form>
         </div>
     </section>
-</div>
-
+</main>
 {% endblock %}

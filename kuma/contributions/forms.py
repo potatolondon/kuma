@@ -25,18 +25,20 @@ class ContributionForm(forms.Form):
     name = StrippedCharField(
         min_length=1,
         max_length=255,
-        label='',
+        label=_('Your full name'),
         widget=forms.TextInput(
             attrs={
+                'class': 'form-input form-input-email',
                 'placeholder': _('Your full name'),
                 'data-error-message': _('Required')
             }
         )
     )
     email = forms.EmailField(
-        label='',
+        label=_('Your email'),
         widget=forms.EmailInput(
             attrs={
+                'class': 'form-input form-input-email',
                 'placeholder': _('you@example.com'),
                 'data-error-message': _('Must be a valid email'),
                 'title': _('Why do you need my email address? This is so we'
@@ -49,10 +51,15 @@ class ContributionForm(forms.Form):
         required=False,
         choices=DONATION_CHOICES,
         widget=forms.RadioSelect(),
-        label='',
+        label=_('Contribution choices'),
         empty_value=0,
         coerce=int,
-        initial=DONATION_CHOICES[1][0]
+        initial=DONATION_CHOICES[1][0],
+        widget=forms.RadioSelect(
+            attrs={
+                'class': 'form-radios form-radios-donation-choices'
+            }
+        )
     )
     donation_amount = forms.DecimalField(
         required=False,
@@ -61,6 +68,7 @@ class ContributionForm(forms.Form):
         decimal_places=2,
         widget=forms.TextInput(
             attrs={
+                'class': 'form-input form-input-amount',
                 'placeholder': _('Other amount'),
                 'data-error-message': _('Must be more than $1')
             }
