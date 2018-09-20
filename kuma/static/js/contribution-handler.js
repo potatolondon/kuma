@@ -36,6 +36,13 @@
             $(win).on('resize.tooltipHandler', function() {
                 closeTooltip(tooltip);
             });
+
+            // Send GA Event.
+            mdn.analytics.trackEvent({
+                category: 'Contribution popover',
+                action: 'Tooltip Opened',
+                value: 1,
+            });
         }
 
         /**
@@ -52,6 +59,13 @@
 
             $(doc).off('click.tooltipHandler');
             $(win).off('resize.tooltipHandler');
+
+            // Send GA Event.
+            mdn.analytics.trackEvent({
+                category: 'Contribution popover',
+                action: 'Tooltip Closed',
+                value: 1,
+            });
         }
 
         /**
@@ -145,6 +159,12 @@
         }
     });
 
+    // Ensure we only show the form if js is enabled
+    if(win.StripeCheckout) {
+        $('#contribution-popover-container').removeClass('hidden');
+    }
+
+
     // Is CTA?
     var isCta = $('.contribution-form').hasClass('contribution-popover');
     if (isCta) {
@@ -188,6 +208,13 @@
         if (ev.target.type === 'radio') {
             customAmountInput.val('');
             $(ev.target).parent().addClass('active');
+            // Send GA Event.
+            mdn.analytics.trackEvent({
+                category: 'Contribution popover',
+                action: 'Amount radio selected',
+                value: ev.target.value,
+            });
+
         } else {
             // reset radio when selecting custom amount
             form.find('input[type=\'radio\']:checked').prop('checked', false);
@@ -206,6 +233,14 @@
         var error = $(field).attr('data-error-message');
 
         $('<ul class="errorlist"><li>' + error + '</li></ul>').insertAfter($(field));
+
+        if($(field).is('#id_donation_amount')) {
+            mdn.analytics.trackEvent({
+                category: 'Contribution popover',
+                action: 'Invalid amount selected',
+                value: 1,
+            });
+        }
     }
 
     // Clear the error message for any required field
@@ -229,6 +264,13 @@
             selectedAmount >= 1 ? clearFieldError(customAmountInput) : setFieldError(customAmountInput);
             return;
         }
+
+        // Send GA Event.
+        mdn.analytics.trackEvent({
+            category: 'Contribution submission',
+            action: isCta ? 'On Popover' : 'On Page',
+            value: 1,
+        });
 
         // on success open Stripe Checkout modal
         handler.open({
@@ -280,6 +322,13 @@
         cta.addClass('collapsing');
         cta.attr('aria-expanded', false);
 
+        // Send GA Event.
+        mdn.analytics.trackEvent({
+            category: 'Contribution popover',
+            action: 'collapse',
+            value: 1,
+        });
+
         // Minimise CTA
         cta.animate({height: ctaCollapsedHeight}, 500, function() {
             cta.addClass('collapsed');
@@ -292,6 +341,13 @@
         cta.addClass('hidden');
         cta.attr('aria-hidden', true);
 
+        // Send GA Event.
+        mdn.analytics.trackEvent({
+            category: 'Contribution popover',
+            action: 'close',
+            value: 1,
+        });
+
         if (win.mdn.features.localStorage) {
             localStorage.setItem('hideCTA', true);
         }
@@ -301,14 +357,28 @@
     formButton.click(onFormButtonClick);
     amountRadio.change(onAmountSelect);
     customAmountInput.on('input', onAmountSelect);
-    customAmountInput.change(onAmountSelect);
     emailField.blur(onChange);
     nameField.blur(onChange);
+    customAmountInput.blur(function(event) {
+        // Send GA Event.
+        mdn.analytics.trackEvent({
+            category: 'Contribution popover',
+            action: 'Amount manually selected',
+            value: event.target.value,
+        });
+    });
 
     if (isCta) {
         closeButton.click(removeCta);
     }
 
     setupTooltips();
+
+    // Send GA Event.
+    mdn.analytics.trackEvent({
+        category: 'Contribution banner',
+        action: 'shown',
+        value: 1,
+    });
 
 })(document, window, jQuery);

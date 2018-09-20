@@ -37,9 +37,10 @@
     function onFeedback(ev) {
         ev.preventDefault();
         var feedback = $(this).find('textarea').val() || '';
+        var action = $(this).find('textarea').attr('data-action') || '';
         mdn.analytics.trackEvent({
-            category: 'FAQ Feedback',
-            action: 'Any other questions',
+            category: 'Contribution feedback',
+            action: action,
             label: feedback,
         });
     }
