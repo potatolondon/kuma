@@ -25,7 +25,7 @@ class ContributionForm(forms.Form):
     name = StrippedCharField(
         min_length=1,
         max_length=255,
-        label='',
+        label=_('Your full name'),
         widget=forms.TextInput(
             attrs={
                 'class': 'form-input form-input-email',
@@ -35,7 +35,7 @@ class ContributionForm(forms.Form):
         )
     )
     email = forms.EmailField(
-        label='',
+        label=_('Your email'),
         widget=forms.EmailInput(
             attrs={
                 'class': 'form-input form-input-email',
@@ -50,7 +50,8 @@ class ContributionForm(forms.Form):
     donation_choices = forms.TypedChoiceField(
         required=False,
         choices=DONATION_CHOICES,
-        label='',
+        widget=forms.RadioSelect(),
+        label=_('Contribution choices'),
         empty_value=0,
         coerce=int,
         initial=DONATION_CHOICES[1][0],
