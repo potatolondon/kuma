@@ -48,7 +48,7 @@
             mdn.analytics.trackEvent({
                 category: 'Contribution popover',
                 action: 'Tooltip Opened',
-                value: 1,
+                value: 1
             });
         }
 
