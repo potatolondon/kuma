@@ -204,6 +204,7 @@
             description: 'One-time donation',
             token: function(token) {
                 stripeToken.val(token.id);
+                addToStorage();
                 form.submit();
             }
         });
@@ -518,7 +519,7 @@
     }
 
     /**
-     * Removes the popover from the page and stores the hidden state in local storge.
+     * Removes the popover from the page
      */
     function disablePopover() {
         popoverBanner.addClass('is-hidden');
@@ -530,14 +531,19 @@
             action: 'close',
             value: 1
         });
+        addToStorage();
+    }
 
+    /**
+     * Stores popover hidden state in local storge.
+     */
+    function addToStorage() {
         if (win.mdn.features.localStorage) {
             var item = JSON.stringify({
                 value: true,
                 // Sets the timestamp to today so we can check its expiration subsequent each page load.
                 timestamp: new Date().getTime()
             });
-
             localStorage.setItem('contributionsPopoverDisabled', item);
         }
     }
