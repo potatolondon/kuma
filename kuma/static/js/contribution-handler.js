@@ -46,9 +46,9 @@
 
             // Send GA Event.
             mdn.analytics.trackEvent({
-                category: 'Contribution popover',
-                action: 'Tooltip Opened',
-                value: 1
+                category: 'payments',
+                action: 'banner',
+                label: 'Tooltip Opened',
             });
         }
 
@@ -69,9 +69,9 @@
 
             // Send GA Event.
             mdn.analytics.trackEvent({
-                category: 'Contribution popover',
-                action: 'Tooltip Closed',
-                value: 1
+                category: 'payments',
+                action: 'banner',
+                label: 'Tooltip Closed',
             });
         }
 
@@ -263,8 +263,9 @@
 
             // Send GA Event.
             mdn.analytics.trackEvent({
-                category: 'Contribution popover',
-                action: 'Amount radio selected',
+                category: 'payments',
+                action: 'banner',
+                label: 'Amount radio selected',
                 value: event.target.value
             });
 
@@ -296,9 +297,9 @@
 
         if ($(field).is('#id_donation_amount')) {
             mdn.analytics.trackEvent({
-                category: 'Contribution popover',
-                action: 'Invalid amount selected',
-                value: 1
+                category: 'payments',
+                action: 'banner',
+                label: 'Invalid amount selected',
             });
         }
     }
@@ -359,9 +360,10 @@
 
         // Send GA Event.
         mdn.analytics.trackEvent({
-            category: 'Contribution submission',
-            action: isPopoverBanner ? 'On Popover' : 'On Page',
-            value: 1
+            category: 'payments',
+            action: 'submission',
+            label: isPopoverBanner ? 'On pop over' : 'On FAQ page',
+            value: selectedAmount
         });
 
         if (stripeHandler !== null) {
@@ -511,9 +513,9 @@
 
         // Send GA Event.
         mdn.analytics.trackEvent({
-            category: 'Contribution popover',
-            action: 'collapse',
-            value: 1
+            category: 'payments',
+            action: 'banner',
+            label: 'collapse',
         });
 
         $(doc).off('keydown.popoverCloseHandler');
@@ -528,9 +530,9 @@
 
         // Send GA Event.
         mdn.analytics.trackEvent({
-            category: 'Contribution popover',
-            action: 'close',
-            value: 1
+            category: 'payments',
+            action: 'banner',
+            label: 'close',
         });
         addDisabledLocaleStorageItem();
     }
@@ -567,8 +569,9 @@
     customAmountInput.blur(function(event) {
         // Send GA Event.
         mdn.analytics.trackEvent({
-            category: 'Contribution popover',
-            action: 'Amount manually selected',
+            category: 'payments',
+            action: 'banner',
+            label: 'custom amount',
             value: event.target.value
         });
     });
@@ -582,9 +585,9 @@
     // Send to GA if popover is displayed.
     if (popoverBanner && popoverBanner.is(':visible')) {
         mdn.analytics.trackEvent({
-            category: 'Contribution banner',
-            action: 'shown',
-            value: 1
+            category: 'payments',
+            action: 'banner',
+            label: 'shown',
         });
     }
 
