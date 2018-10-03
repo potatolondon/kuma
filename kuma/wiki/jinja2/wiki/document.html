@@ -102,13 +102,13 @@
   <!-- heading -->
   <div id="wiki-document-head" class="document-head">
     <div class="center">
+      <div class="document-title">
+        <h1>{{ document.title }}</h1>
+      </div>
+
       <!-- action buttons -->
       <div class="document-actions">
         {{ buttons }}
-      </div>
-
-      <div class="document-title">
-        <h1>{{ document.title }}</h1>
       </div>
     </div>
   </div>
@@ -289,7 +289,7 @@
 {% endblock %}
 
 {% block contrib_popup %}
-    {%- if contribution_enabled %}
+    {%- if contribution_popup %}
         {%- with form=contribution_form, is_popover=True %}
             {%- include "contributions/includes/contribution-form.html" %}
         {%- endwith %}
@@ -340,7 +340,7 @@
     {% javascript 'newsletter' %}
   {% endif %}
 
-  {%- if contribution_enabled %}
+  {%- if contribution_popup %}
     {% javascript 'contribute' %}
   {%- endif %}
 
