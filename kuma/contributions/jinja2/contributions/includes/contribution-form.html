@@ -52,6 +52,7 @@
                             <p>{{_('This is so we can send you a receipt. This is handy if you’d like a refund.') }}</p>
                         </div>
                     </div>
+                    {{form.subscribe}}
                     <label class="offscreen" for="id_{{form.donation_choices.name}}">{{form.donation_choices.label}}</label>
                     {{form.donation_choices}}
                     <label class="label" aria-label="{{ _('Other contribution amount') }}" for="id_{{form.donation_amount.name}}">{{form.donation_amount.label}}</label>

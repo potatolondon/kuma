@@ -26,6 +26,15 @@ DONATION_CHOICES = [
 
 
 class ContributionForm(forms.Form):
+    subscribe = forms.BooleanField(
+        required=False,
+        label=_('Subscribe'),
+        widget=forms.CheckboxInput(
+            attrs={
+            }
+        )
+    )
+
     name = StrippedCharField(
         min_length=1,
         max_length=255,
@@ -108,7 +117,22 @@ class ContributionForm(forms.Form):
         super(ContributionForm, self).__init__(*args, **kwargs)
         self.fields['stripe_public_key'].initial = settings.STRIPE_PUBLIC_KEY
 
-    def make_charge(self):
+    def create_customer(self, email, token, user):
+        customer = stripe.Customer.create(
+            email=email,
+            source=token
+        ) 
+        user.customer_id = customer.id
+        user.save()
+        return customer.id
+
+    def update_source_name(self, source_id, name):
+        """Updates the source name with the users defined name"""
+        source = stripe.Source.retrieve(source_id)
+        source.owner["name"] = name
+        source.save()
+
+    def make_charge(self, user):
         """Make a charge using the Stripe API and validated form."""
         amount = self.cleaned_data['donation_amount'] or self.cleaned_data['donation_choices']
         if isinstance(amount, Decimal):
@@ -119,14 +143,57 @@ class ContributionForm(forms.Form):
         token = self.cleaned_data.get('stripe_token', '')
         if token and amount:
             try:
-                stripe.Charge.create(
-                    amount=amount,
-                    currency='usd',
-                    source=token,
-                    description='Support MDN Web Docs',
-                    receipt_email=self.cleaned_data['email'],
-                    metadata={'name': self.cleaned_data['name']}
-                )
+                subscribe = self.cleaned_data['subscribe']
+                product_id = 'prod_DkVhNAPsrrfVXV'
+
+                customer_id = None
+
+                # If the user is authenticated make a customer
+                if user.is_authenticated:
+                    # Check if a customer exists
+                    if user.customer_id:
+                        # ensure that customer is active
+                        customer = stripe.Customer.retrieve(user.customer_id)
+                        import pdb; pdb.set_trace()
+                        # if deleted make a new customer
+                        if 'deleted' in customer:
+                            customer_id = self.create_customer(self.cleaned_data['email'], token, user)
+                        else:
+                            customer_id = user.customer_id
+                    else:
+                        customer_id = self.create_customer(self.cleaned_data['email'], token, user)
+
+                if subscribe:
+
+                    self.update_source_name(token, self.cleaned_data['name'])
+
+                    plan = stripe.Plan.create(
+                        amount=amount,
+                        interval="month",
+                        product=product_id,
+                        currency="usd",
+                    )
+
+                    stripe.Subscription.create(
+                        customer=customer_id,
+                        billing='charge_automatically',
+                        items=[
+                            {
+                            "plan": plan.id,
+                            },
+                        ]
+                    )
+                else:
+                    stripe.Charge.create(
+                        amount=amount,
+                        currency='usd',
+                        source=token,
+                        description='Support MDN Web Docs',
+                        metadata={'name': self.cleaned_data['name']},
+                        customer=customer_id or None,
+                        receipt_email=self.cleaned_data['email']
+                    )
+
                 return True
             except Exception as e:
                 log.error(

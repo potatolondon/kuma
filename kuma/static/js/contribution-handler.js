@@ -204,9 +204,9 @@
             locale: 'en',
             name: 'MDN Web Docs',
             description: 'One-time donation',
-            token: function(token) {
+            source: function(source) {
                 submitted = true;
-                stripeToken.val(token.id);
+                stripeToken.val(source.id);
                 addDisabledLocaleStorageItem();
                 // Send GA Event.
                 mdn.analytics.trackEvent({

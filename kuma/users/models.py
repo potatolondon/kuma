@@ -97,6 +97,11 @@ class User(AbstractUser):
         max_length=255,
         blank=True,
     )
+    customer_id = models.CharField(
+        verbose_name=_(u'Stripe customer ID'),
+        max_length=255,
+        blank=True,
+    )
 
     tags = NamespacedTaggableManager(verbose_name=_(u'Tags'), blank=True)
 
@@ -140,7 +145,7 @@ class User(AbstractUser):
             r'^https://discourse\.mozilla\.org/u/',
             _('Enter a valid Discourse URL.'),
             'invalid',
-        )
+        ),
     }
 
     # a bunch of user URLs

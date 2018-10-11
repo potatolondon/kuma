@@ -36,7 +36,7 @@ def contribute(request):
     if request.POST:
         form = ContributionForm(request.POST)
         if form.is_valid():
-            if form.make_charge():
+            if form.make_charge(request.user):
                 if settings.MDN_CONTRIBUTION_CONFIRMATION_EMAIL:
                     contribute_thank_you_email.delay(
                         form.cleaned_data['name'],
