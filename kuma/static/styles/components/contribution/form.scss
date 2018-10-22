@@ -128,15 +128,6 @@
                 }
             }
         }
-        @media #{$mq-tablet-and-down} {
-            .form-radios-donation-choices {
-                width: 53%;
-            }
-
-            .form-input-amount {
-                width: 45%;
-            }
-        }
 
         @media #{$mq-small-mobile-and-down} {
             .form-radios-donation-choices {
@@ -181,6 +172,7 @@
                 line-height: $contribution-form-input-height;
                 min-width: $contribution-form-input-height;
                 text-align: center;
+                box-sizing: border-box;
 
                 &:hover {
                     background: darken(#fff, 3%);
