@@ -123,7 +123,18 @@
             width: 49%;
 
             @media #{$mq-small-desktop-and-down} {
-                display: block;
+                li {
+                    margin: 0;
+                }
+            }
+        }
+
+        @media #{$mq-small-mobile-and-down} {
+            .form-radios-donation-choices {
+                width: 100%;
+            }
+
+            .form-input-amount {
                 width: 100%;
             }
         }
@@ -132,7 +143,7 @@
     .form-radios-donation-choices {
         text-align: center;
 
-        @media #{$mq-large-desktop-and-up} {
+        @media #{$mq-tablet-and-up} {
             text-align: left;
         }
 
@@ -161,6 +172,7 @@
                 line-height: $contribution-form-input-height;
                 min-width: $contribution-form-input-height;
                 text-align: center;
+                box-sizing: border-box;
 
                 &:hover {
                     background: darken(#fff, 3%);
@@ -309,10 +321,5 @@
         margin: $contribution-form-input-spacing 0 0;
         vertical-align: middle;
         width: 49%;
-
-        @media #{$mq-tablet-and-down} {
-            display: block;
-            width: 100%;
-        }
     }
 }
