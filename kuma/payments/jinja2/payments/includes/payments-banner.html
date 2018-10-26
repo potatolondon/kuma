@@ -1,4 +1,4 @@
-<div id="contribution-popover-container" class="contribution-banner {% if is_popover %}contribution-popover is-collapsed is-hidden{% endif %}"
+<div id="contribution-banner-container" class="contribution-banner {% if is_popover %}contribution-popover is-collapsed is-hidden{% endif %}"
     {% if is_popover %} aria-expanded="false" aria-hidden="true" {% endif %}>
     {% if is_popover %}
     <div class="contribution-popover-actions">
@@ -42,7 +42,7 @@
             {% set recurring_payments = True %}
             <div class="payments-form-container">
                 {% if recurring_payments %}
-                    <div class="payments-switch">
+                    <div id="payment-switch" class="payments-switch">
                         <button class="active">
                             One off payment
                         </button>
@@ -63,14 +63,16 @@
 
                     {% if user.username %}
                         {% with form=form, hidden=True %}
-                            {#- include "payments/includes/payments-form.html" #}
+                            {%- include "payments/includes/payments-form.html" %}
                         {% endwith %}
                     {% else %}
                         {% set github_url = provider_login_url('github', next=next_url) %}
-                        <p>We’ve noticed you’re not logged in to MDN. To complete your monthly payment, we’ll need you to log in first.</p>
-                        <a href="{{ github_url }}" class="payment-form-button" data-service="GitHub" rel="nofollow">
-                            {{ _('Sign in') }}{% include 'includes/icons/social/github.svg' %}
-                        </a>
+                        <div class="contribution-form hidden">
+                            <p>We’ve noticed you’re not logged in to MDN. To complete your monthly payment, we’ll need you to log in first.</p>
+                            <a href="{{ github_url }}" class="payment-form-button" data-service="GitHub" rel="nofollow">
+                                {{ _('Sign in') }}{% include 'includes/icons/social/github.svg' %}
+                            </a>
+                        </div>
                     {% endif %}
 
                 {% endif %}

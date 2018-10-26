@@ -13,6 +13,99 @@
      */
     var CONTRIBUTIONS_DISABLED_EXPIRATION =  5 * 24 * 60 * 60 * 1000; // 5 days.
 
+    var paymentsBanner = doc.getElementById('contribution-banner-container');
+    var forms = createFormObject(Array.from(paymentsBanner.querySelectorAll('form.contribution-form')));
+    var submitted = false;
+    var isPopoverBanner = Boolean($(paymentsBanner).hasClass('contribution-popover'));
+    var stripeKey = paymentsBanner.querySelector('#id_stripe_public_key').value;
+    var stripeHandler = null;
+    var activeElement = null;
+    var collapseButton = null;
+    var closeButton = null;
+    var selectedAmount = null;
+    var popoverBanner = null;
+    console.log(stripeKey, forms);
+    initializeBanner();
+    var currrentForm = 0;
+    /**
+     * Builds a form object for all innteractive elements in the form.
+     * @param {Element[]} forms
+     */
+    function createFormObject(forms) {
+        var formsObject = [];
+        forms.forEach(function(form) {
+            formsObject.push({
+                form: form,
+                fields: {
+                    name:  form.querySelector('input[name=\'name\']'),
+                    email: form.querySelector('input[type=\'email\']'),
+                    customAmountInput: form.querySelector('input[name=\'donation_amount\']'),
+                    amountRadioChoices: {
+                        defaultSelection: form.querySelector('input[type=\'radio\']:checked'),
+                        elements: form.querySelectorAll('input[name=\'donation_choices\']')
+                    },
+                    hidden: {
+                        stripePublicKey: form.querySelector('#id_stripe_public_key'),
+                        stripeToken: form.querySelector('#id_stripe_token')
+                    }
+                },
+                button: {
+                    element: form.querySelector('#stripe_submit'),
+                    amoubt: form.querySelector('#amount')
+                },
+                errors: {
+                    failedToLoadStripe: form.querySelector('#contribution-error-message')
+                }
+            });
+        });
+        return formsObject;
+    }
+
+    /**
+     * Runs various tasks to setup the banner
+     * Sets the banner element varibles
+     */
+    function initializeBanner() {
+
+        // Ensure we only show the form if js is enabled
+        if (win.StripeCheckout) {
+            $(paymentsBanner).removeClass('is-hidden');
+        }
+
+        /* If `isPopoverBanner` is false then this is the contribute page.
+        Init the Stripe handler immediately */
+        if (!isPopoverBanner && win.StripeCheckout) {
+            stripeHandler = initStripeHandler();
+        }
+
+        // Set banner varibles
+        if (isPopoverBanner) {
+            activeElement = null;
+            popoverBanner = $(paymentsBanner);
+            collapseButton = popoverBanner.find('#collapse-popover-button');
+            closeButton = popoverBanner.find('#close-popover-button');
+            checkPopoverDisabled();
+        }
+
+        // Set initial radio state and save that state
+        forms.forEach(function(form) {
+            // Set default amount
+            var defaultSelection = form.fields.amountRadioChoices.defaultSelection;
+            defaultSelection.parentNode.classList.add('active');
+            selectedAmount = defaultSelection ? defaultSelection.value : 0;
+
+            // Clear the custom input value
+            form.fields.customAmountInput.value = '';
+
+            // Display backend errors if they exist on the fields
+            var backendValidationErrors = Array.from(form.form.querySelectorAll('form-group .errorlist'));
+            backendValidationErrors.forEach(function(field) {
+                field.previousElementSibling.classList.add('error');
+            });
+
+        });
+    }
+
     /**
      * Runs on page load and checks the localStorage item timestamp to see if
      * it's expired yet and we can show the popover again.
@@ -50,36 +143,18 @@
         popoverBanner.attr('aria-hidden', false);
     }
 
-    var form = $('#contribute-form');
-    // Inputs.
-    var emailField = form.find('#id_email');
-    var nameField = form.find('#id_name');
-    var defaultAmount = form.find('input[type=\'radio\']:checked');
-    var amountRadio = form.find('input[name=donation_choices]');
-    var customAmountInput = form.find('#id_donation_amount');
-    // Hidden fields.
-    var stripePublicKey = form.find('#id_stripe_public_key');
-    var stripeToken = form.find('#id_stripe_token');
-    var stripeHandler = null;
-    // Other.
-    var formButton = form.find('#stripe_submit');
-    var formErrorMessage = form.find('#contribution-error-message');
-    var amount = formButton.find('#amount');
-
-    var submitted = false;
-
     /**
      * Initialise the stripeCheckout handler.
      */
     function initStripeHandler() {
         return win.StripeCheckout.configure({
-            key: stripePublicKey.val(),
+            key: stripeKey,
             locale: 'en',
             name: 'MDN Web Docs',
             description: 'One-time donation',
             token: function(token) {
                 submitted = true;
-                stripeToken.val(token.id);
+                forms[currentForm].fields.hidden.stripeToken.value = token.id;
                 addDisabledLocaleStorageItem();
                 // Send GA Event.
                 mdn.analytics.trackEvent({
@@ -88,42 +163,30 @@
                     label: 'completed',
                     value: selectedAmount * 100
                 });
-                form.submit();
+                forms[currrentForm].form.submit();
             }
         });
     }
 
-    // Ensure we only show the form if js is enabled
-    if (win.StripeCheckout) {
-        $('#contribution-popover-container').removeClass('is-hidden');
+    /**
+     * Handle user changing tabs
+     * @param {jQuery.Event} event Event object.
+     */
+    function onTabChange(event) {
+        if (event.target.classList.contains('active')) {
+            return;
+        }
+
+        // Remove current active tab.
+        var currentTab = event.target.parentNode.getElementsByClassName('active')[0];
+        currentTab.classList.remove('active');
+        event.target.classList.add('active');
+        var currentForm = doc.querySelector('.contribution-form:not(.hidden)');
+        var nextForm = doc.querySelector('.contribution-form.hidden');
+
+        currentForm.classList.add('hidden');
+        nextForm.classList.remove('hidden');
     }
-
-    var isPopoverBanner = $('.contribution-banner').hasClass('contribution-popover');
-
-    /* If `isPopoverBanner` is false then this is the contribute page.
-     Init the handler immediately */
-    if (!isPopoverBanner && win.StripeCheckout) {
-        stripeHandler = initStripeHandler();
-    }
-
-    if (isPopoverBanner) {
-        var activeElement = null;
-        var popoverBanner = $('.contribution-banner');
-        var collapseButton = popoverBanner.find('#collapse-popover-button');
-        var closeButton = popoverBanner.find('#close-popover-button');
-
-        checkPopoverDisabled();
-    }
-
-    // Set initial radio state.
-    defaultAmount.parent().addClass('active');
-
-    var selectedAmount = defaultAmount.length ? defaultAmount[0].value : 0;
-
-    customAmountInput.val('');
-
-    // Set errors.
-    form.find('.errorlist').prev().addClass('error');
 
     /**
      * Handles adjusting amount.
@@ -357,11 +420,11 @@
             popoverBanner.off('transitionend');
 
             // listen to minimise button clicks.
-            collapseButton.click(collapseCta);
+            collapseButton.click(collapsePopover);
 
             $(doc).on('keydown.popoverCloseHandler', function(event) {
                 if (event.keyCode === 27) { // Escape key.
-                    collapseCta();
+                    collapsePopover();
                 }
             });
         });
@@ -376,7 +439,7 @@
     /**
      * Collapses popover.
      */
-    function collapseCta() {
+    function collapsePopover() {
         collapseButton.off();
 
         // Remove error if it exists
@@ -450,13 +513,10 @@
         }
     }
 
-    // Register event handlers and set things up.
-    formButton.click(onFormButtonClick);
-    amountRadio.change(onAmountSelect);
-    customAmountInput.on('input', onAmountSelect);
-    emailField.blur(onChange);
-    nameField.blur(onChange);
-    customAmountInput.blur(function(event) {
+    /**
+     * Trigger an event to track what amounts are being selected
+     */
+    function trackCustomAmount(event) {
         var value = parseFloat(event.target.value);
         if (!isNaN(value) && value >= 1) {
             // Send GA Event.
@@ -473,7 +533,20 @@
                 label: 'Invalid amount selected',
             });
         }
-    });
+    }
+
+    // Register event handlers
+    formButton.click(onFormButtonClick);
+    amountRadio.change(onAmountSelect);
+    customAmountInput.on('input', onAmountSelect);
+    emailField.blur(onChange);
+    nameField.blur(onChange);
+    customAmountInput.blur(trackCustomAmount);
+
+    // Feature specific handlers
+    if (tabContainer) {
+        tabContainer.addEventListener('click', onTabChange);
+    }
 
     if (isPopoverBanner) {
         closeButton.click(disablePopover);
