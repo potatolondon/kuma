@@ -62,7 +62,7 @@
                 {% if recurring_payments %}
 
                     {% if user.username %}
-                        {% with form=form, hidden=True %}
+                        {% with form=form, form=form, is_popover=False, recurring_payment=recurring_payment  %}
                             {#- include "payments/includes/payments-form.html" #}
                         {% endwith %}
                     {% else %}
