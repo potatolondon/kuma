@@ -1,4 +1,4 @@
-<form id="contribute-form" class="contribution-form" method="{% if recurring_payment and not request.user.is_authenticated %}get{%else%}post{%endif%}" action="{% if recurring_payment %}{{url('recurring_payment_subscription')}}{%else%}{{url('payments')}}{%endif%}" novalidate>
+<form id="contribute-form" class="contribution-form" method="{% if recurring_payment and not request.user.is_authenticated %} get {% else %} post {% endif %}" action="{% if recurring_payment %}{{url('recurring_payment_subscription')}}{%else%}{{url('payments')}}{%endif%}" novalidate>
     <div class="form-group">
         <label class="offscreen" for="id_{{form.name.name}}">{{form.name.label}}</label>
         {{form.name}}
@@ -44,14 +44,14 @@
     </ul>
     <div class="form-footer">
         {% if request.user.is_authenticated or not recurring_payment and not request.user.is_authenticated %}
-            <button type="button" id="stripe_submit">
+            <button class="payment-form-button" type="button" id="stripe_submit">
                 <span class="hide-expand">{{_('Support MDN')}} {% include 'includes/icons/arrows/chevron-up.svg' %}</span>
                 <span class="hide-collapse">
                 {{_('Pay <span id="%(span_id)s">%(amount)s</span>', span_id="amount", amount="$64") }}
             </span>
             </button>
         {% else %}
-            <button type="submit">
+            <button class="payment-form-button" type="submit">
                 <span class="hide-expand">{{_('Support MDN')}} {% include 'includes/icons/arrows/chevron-up.svg' %}</span>
                 <span class="hide-collapse">
                 {{_('Pay <span id="%(span_id)s">%(amount)s</span>', span_id="amount", amount="$64") }}
