@@ -46,8 +46,9 @@ PROTOCOL = config('PROTOCOL', default='https://')
 DOMAIN = config('DOMAIN', default='developer.mozilla.org')
 SITE_URL = config('SITE_URL', default=PROTOCOL + DOMAIN)
 PRODUCTION_DOMAIN = 'developer.mozilla.org'
+PRODUCTION_URL = 'https://' + PRODUCTION_DOMAIN
 STAGING_DOMAIN = 'developer.allizom.org'
-STAGING_URL = PROTOCOL + STAGING_DOMAIN
+STAGING_URL = 'https://' + STAGING_DOMAIN
 
 _PROD_INTERACTIVE_EXAMPLES = 'https://interactive-examples.mdn.mozilla.net'
 INTERACTIVE_EXAMPLES_BASE = config(
@@ -496,7 +497,12 @@ AUTHENTICATION_BACKENDS = (
 )
 AUTH_USER_MODEL = 'users.User'
 USER_AVATAR_PATH = 'uploads/avatars/'
-DEFAULT_AVATAR = STATIC_URL + 'img/avatar.png'
+
+if urlsplit(STATIC_URL).hostname in (None, 'localhost'):
+    # Gravatar needs a publicly available default image
+    DEFAULT_AVATAR = PRODUCTION_URL + '/static/img/avatar.png'
+else:
+    DEFAULT_AVATAR = STATIC_URL + 'img/avatar.png'
 
 AVATAR_SIZES = [  # in pixels
     34,   # wiki document page
@@ -955,7 +961,14 @@ PIPELINE_JS = {
             'js/payments-handler.js',
             'js/payments-faq.js',
         ),
-        'output_filename': 'build/js/contribute.js',
+        'output_filename': 'build/js/payments.js',
+    },
+    'payments-confirmation': {
+        'source_filenames': (
+            'js/payments-faq.js',
+            'js/payments-confirmation.js',
+        ),
+        'output_filename': 'build/js/payments-confirmation.js',
     },
     'framebuster': {
         'source_filenames': (
@@ -1247,18 +1260,19 @@ EMAIL_FILE_PATH = '/app/tmp/emails'
 # Content Security Policy (CSP)
 CSP_DEFAULT_SRC = ("'none'",)
 CSP_CONNECT_SRC = [
-    "'self'",
+    SITE_URL,
 ]
 CSP_FONT_SRC = [
-    "'self'",
+    SITE_URL,
 ]
 CSP_FRAME_SRC = [
     urlunsplit((scheme, netloc, '', '', ''))
     for scheme, netloc, ignored_path in ALLOWED_IFRAME_PATTERNS]
 
 CSP_IMG_SRC = [
-    "'self'",
+    SITE_URL,
     "data:",
+    PROTOCOL + "i2.wp.com",
     "https://secure.gravatar.com",
     "https://www.google-analytics.com",
     _PROD_ATTACHMENT_SITE_URL
@@ -1267,13 +1281,13 @@ if ATTACHMENT_SITE_URL not in (_PROD_ATTACHMENT_SITE_URL, SITE_URL):
     CSP_IMG_SRC.append(ATTACHMENT_SITE_URL)
 
 CSP_SCRIPT_SRC = [
-    "'self'",
+    SITE_URL,
     "www.google-analytics.com",
     # TODO fix things so that we don't need this
     "'unsafe-inline'",
 ]
 CSP_STYLE_SRC = [
-    "'self'",
+    SITE_URL,
     # TODO fix things so that we don't need this
     "'unsafe-inline'",
 ]
@@ -1484,18 +1498,18 @@ CONSTANCE_CONFIG = dict(
         "are removed from the file storage"
     ),
     KUMA_WIKI_IFRAME_ALLOWED_HOSTS=(
-        ('^https?\:\/\/'
-         '(stage-files.mdn.moz.works'               # Staging demos
-         '|mdn.mozillademos.org'                    # Production demos
-         '|testserver'                              # Unit test demos
-         '|localhost\:8000'                         # Docker development demos
-         '|localhost\:8080'                         # Embedded samples server
-         '|rpm.newrelic.com\/public\/charts\/.*'    # MDN/Kuma/Server_charts
-         '|(www.)?youtube.com\/embed\/(\.*)'        # Embedded videos
-         '|jsfiddle.net\/.*embedded.*'              # Embedded samples
-         '|mdn.github.io'                           # Embedded samples
-         '|interactive-examples.mdn.mozilla.net'    # Embedded samples
-         ')'),
+        (r'^https?\:\/\/'
+         r'(stage-files.mdn.moz.works'              # Staging demos
+         r'|mdn.mozillademos.org'                   # Production demos
+         r'|testserver'                             # Unit test demos
+         r'|localhost\:8000'                        # Docker development demos
+         r'|localhost\:8080'                        # Embedded samples server
+         r'|rpm.newrelic.com\/public\/charts\/.*'   # MDN/Kuma/Server_charts
+         r'|(www.)?youtube.com\/embed\/(\.*)'       # Embedded videos
+         r'|jsfiddle.net\/.*embedded.*'             # Embedded samples
+         r'|mdn.github.io'                          # Embedded samples
+         r'|interactive-examples.mdn.mozilla.net'   # Embedded samples
+         r')'),
         'Regex comprised of domain names that are allowed for IFRAME SRCs'
     ),
     GOOGLE_ANALYTICS_ACCOUNT=(
