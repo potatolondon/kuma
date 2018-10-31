@@ -1,3 +1,10 @@
+{# Set URLs outside of translation block, to keep user's locale #}
+{% set payments_url = url('payments') %}
+{% set faq_url = payments_url + "#contribute-faqs" %}
+{% set feedback_url = payments_url + "#contribute-feedback" %}
+
+{% translation 'en-US' %}{# Display in English until Q1 2019 #}
+
 <form id="contribute-form" class="contribution-form" method="{% if recurring_payment and not request.user.is_authenticated %}get{% else %}post{% endif %}" action="{% if recurring_payment %}{{url('recurring_payment_subscription')}}{%else%}{{url('payments')}}{%endif%}" novalidate>
     <div class="form-group {% if recurring_payment %} recurring-form {% endif %}">
         <label class="offscreen" for="id_{{form.name.name}}">{{form.name.label}}</label>
@@ -65,3 +72,4 @@
         </div>
     </div>
 </form>
+{% endtranslation %}
