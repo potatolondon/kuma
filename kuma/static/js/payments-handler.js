@@ -65,7 +65,8 @@
     var formButton = form.find('#stripe_submit');
     var formErrorMessage = form.find('#contribution-error-message');
     var amount = formButton.find('#amount');
-
+    var paymentUserLoginPrompt = $('#payment-user-login-prompt');
+    var signInButton = paymentUserLoginPrompt.find('a');
     var submitted = false;
 
     /**
@@ -230,6 +231,21 @@
             } else {
                 setFieldError(customAmountInput);
             }
+
+            return;
+        }
+
+        var isUserAuthenticated = Boolean(form.attr('data-auth-user'));
+        var isRecurringPayment = Boolean(form.attr('data-payment-type') === 'recurring');
+
+        // If login is required open prompt
+        if (!isUserAuthenticated && isRecurringPayment) {
+            // Build the next_url to save infomation.
+            var nextUrl = 'github';
+            // hide the form
+            form.addClass('hidden');
+            // show the prompt
+            paymentUserLoginPrompt.removeClass('hidden');
 
             return;
         }
