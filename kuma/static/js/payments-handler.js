@@ -460,7 +460,8 @@
     }
 
     /**
-     * Removed popover hidden state in local storge.
+     * Builds correct URL param and directs to GitHub for authentication.
+     * @param {jQuery.Event} event Event object.
      */
     function redirectUserToLogin(event) {
         event.preventDefault();
