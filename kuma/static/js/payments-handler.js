@@ -54,6 +54,7 @@
     // Inputs.
     var emailField = form.find('#id_email');
     var nameField = form.find('#id_name');
+    var recuringConfirmationCheckbox = form.find('#id_accept_checkbox');
     var defaultAmount = form.find('input[type=\'radio\']:checked');
     var amountRadio = form.find('input[name=donation_choices]');
     var customAmountInput = form.find('#id_donation_amount');
@@ -64,11 +65,12 @@
     // Other.
     var formButton = form.find('#stripe_submit');
     var formErrorMessage = form.find('#contribution-error-message');
-    var amount = formButton.find('#amount');
+    var amountToUpdate = form.find('[data-dynamic-amount]');
 
     var requestUserLogin = doc.getElementById('login-popover');
     var githubRedirectButton = doc.getElementById('github_redirect_payment');
 
+    var isRecurringPayment = form.attr('data-payment-type') === 'recurring';
     var submitted = false;
 
     /**
@@ -166,7 +168,7 @@
 
         var newValue = (selectedAmount < 1 || isNaN(selectedAmount)) ? '' : '$' + selectedAmount;
 
-        amount.html(newValue);
+        amountToUpdate.html(newValue);
     }
 
     /**
@@ -232,6 +234,12 @@
                 clearFieldError(customAmountInput);
             } else {
                 setFieldError(customAmountInput);
+            }
+
+            if (isRecurringPayment && recuringConfirmationCheckbox[0].checkValidity()) {
+                clearFieldError(recuringConfirmationCheckbox[0]);
+            } else {
+                setFieldError(recuringConfirmationCheckbox[0]);
             }
 
             return;
@@ -499,6 +507,13 @@
             });
         }
     });
+
+    // Clear validation for checkbox confirmation
+    if (isRecurringPayment) {
+        recuringConfirmationCheckbox.change(function() {
+            clearFieldError(recuringConfirmationCheckbox[0]);
+        });
+    }
 
     if (isPopoverBanner) {
         closeButton.click(disablePopover);
