@@ -1,10 +1,12 @@
 <form id="contribute-form"
-    class="contribution-form"
+    class="contribution-form {% if recurring_payment or (is_popover and recurring_payment_enabled) %}recurring-form{% endif %}"
     method="{% if recurring_payment and not request.user.is_authenticated %}get{% else %}post{% endif %}"
-    action="{% if recurring_payment %}{{ recurring_payment_subscription_url }}{% else %}{{ payments_url }}{% endif %}"
-    data-payment-type="{% if recurring_payment %}recurring{% else %}one-time{% endif %}"
+    action="{% if recurring_payment or (is_popover and recurring_payment_enabled) %}{{ recurring_payment_subscription_url }}{% else %}{{ payments_url }}{% endif %}"
+    data-payment-type="{% if recurring_payment or (is_popover and recurring_payment_enabled) %}recurring{% else %}one_time{% endif %}"
+    data-recurring-action="{{ recurring_payment_subscription_url }}"
+    data-one-time-action="{{ payments_url }}"
     novalidate>
-    <div class="form-group {% if recurring_payment %} recurring-form {% endif %}">
+    <div class="form-group">
         <label class="offscreen" for="id_{{form.name.name}}">{{form.name.label}}</label>
         {{form.name}}
         {{form.name.errors}}
@@ -30,8 +32,6 @@
             {{form.stripe_token}}
             {{form.stripe_public_key}}
         {% endif %}
-
-
         <p class="legal-copy">
             Payments are not tax deductible. Your payment details will be processed by
             <a href="https://stripe.com/" rel="noopener" target="_blank">Stripe</a>.
@@ -39,10 +39,10 @@
             <a href="{{ url('payment_terms') }}" rel="noopener" target="_blank">Payment terms</a>,
             for more information.
         </p>
-
-        {% if recurring_payment %}
-            <input type="hidden" id="stripe_source_setup" value="1">
-            <label class="recurring-payment-confirmation">
+        <input type="hidden" id="stripe_source_setup" value="1">
+        {% set show_checkbox = recurring_payment or (is_popover and recurring_payment_enabled) %}
+        <div id="recurring-confirmation-container" {% if not show_checkbox %}class="hidden"{% endif %}>
+            <label class="recurring-payment-confirmation" for="{{form.accept_checkbox.id_for_label}}">
                 {{form.accept_checkbox}}
                 <div class="control-indicator"></div>
                 <span class="legal-copy">
@@ -52,20 +52,24 @@
                     I cancel my subscription.
                 </span>
             </label>
-        {% endif %}
+        </div>
+
     </div>
     <ul class="errorlist hidden" id="contribution-error-message">
         <li>{{_('There has been an issue, please try again later.')}}</li>
     </ul>
     <div class="form-footer">
-        <button class="payment-form-button"
-            {% if request.user.is_authenticated or not recurring_payment and not request.user.is_authenticated %} type="button" id="stripe_submit"
-            {% else %} type="submit" {% endif %}>
+        <button class="payment-form-button" type="button" id="stripe_submit">
             <span class="hide-expand">{{_('Support MDN')}} {% include 'includes/icons/arrows/chevron-up.svg' %}</span>
             <span class="hide-collapse">
                 {{_('Pay <span data-dynamic-amount>%(amount)s</span>', amount="$64") }}
             </span>
         </button>
+
+        <a class="payment-form-link" href="{{ default_payment_url }}">
+            {{_('Support MDN')}}
+        </a>
+
         <div class="payment-details">
             <img src="{{ static('img/payment-type-mastercard-1x.png') }}" srcset="{{ static('img/payment-type-mastercard-1x.png') }}, {{ static('img/payment-type-mastercard-2x.png') }} 2x" alt="{{ _('We accept Mastercard payments') }}" title="{{ _('We accept Mastercard payments') }}">
             <img src="{{ static('img/payment-type-visa-1x.png') }}" srcset="{{ static('img/payment-type-visa-1x.png') }}, {{ static('img/payment-type-visa-2x.png') }} 2x" alt="{{ _('We accept Visa payments') }}" title="{{ _('We accept Visa payments') }}">
@@ -73,3 +77,12 @@
         </div>
     </div>
 </form>
+<script>
+    window.payments = {
+        donationChoices: {
+            oneTime: {{payments_form_donation_choices_json}},
+            recurring: {{recurring_payment_form_donation_choices_json}}
+        },
+        isAuthenticated: '{{user.is_authenticated()}}' === 'True'
+    };
+</script>

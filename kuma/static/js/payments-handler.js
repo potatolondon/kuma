@@ -67,8 +67,36 @@
     var formErrorMessage = form.find('#contribution-error-message');
     var amountToUpdate = form.find('[data-dynamic-amount]');
 
-    var isRecurringPayment = form.attr('data-payment-type') === 'recurring';
+    var currrentPaymentForm = form.attr('data-payment-type');
+    var requestUserLogin = doc.getElementById('login-popover');
+    var githubRedirectButton = doc.getElementById('github_redirect_payment');
+
+    var hasPaymentSwitch = Boolean(doc.getElementById('dynamic-payment-switch'));
+    var paymentTypeSwitch = doc.querySelectorAll('input[type=radio][name="payment_selector"]');
+    var recurringConfirmationContainer = doc.getElementById('recurring-confirmation-container');
+
     var submitted = false;
+
+    var amountRadioInputs = doc.querySelectorAll('input[data-dynamic-choice-selector]');
+    var donationChoices = typeof window.payments !== 'undefined' && 'donationChoices' in window.payments
+        ? win.payments.donationChoices
+        : null;
+
+    /* Following recurring payments flow the user may be redirected back to the form to submit payment.
+       We're tracking this with a localstorage item as this should percist across various pages. */
+    var triggerAnalyticEvents = !hasUserBeenRedirected();
+
+    /**
+     * Check storage to see if user is being redirected
+     * @returns {boolean}
+     */
+    function hasUserBeenRedirected() {
+        if (!win.mdn.features.localStorage) {
+            return false;
+        }
+
+        return Boolean(localStorage.getItem('userAuthenticationOnFormSubmission'));
+    }
 
     /**
      * Initialise the stripeCheckout handler.
@@ -127,6 +155,55 @@
     // Set errors.
     form.find('.errorlist').prev().addClass('error');
 
+
+    /**
+     * Emits an event for recurring payments
+     * @param {Object} event - The event to be emitted
+     * @param {string} event.action - The event's action name
+     * @param {number} [event.value] - the event's numerical value
+     * @param {boolean} [storeUserForLaterEvents] - store user auth level for later analytic events
+     */
+    function triggerRecurringPaymentEvent(event, storeUserForLaterEvents) {
+        if (!triggerAnalyticEvents) {
+            return;
+        }
+
+        mdn.analytics.trackEvent({
+            category: 'Recurring payments',
+            action: event.action,
+            label: win.payments.isAuthenticated ? 'authenticated' : 'anonymous',
+            value: event.value
+        });
+
+        /* Save the user authentication level so that we can track conversion rates of
+           authenticated vs anonymous users at a later stage in the payment flow. */
+        if (storeUserForLaterEvents) {
+            var item = win.payments.isAuthenticated ? 'authenticated' : 'anonymous';
+            localStorage.setItem('userAuthenticationOnFormSubmission', item);
+            triggerAnalyticEvents = false;
+        }
+    }
+
+    /**
+     * Emits an event for recurring payments
+     * @param {Object} event - The event to be emitted
+     * @param {string} event.action - The event's action name
+     * @param {string} [event.label] - The event's label name
+     * @param {number} [event.value] - the event's numerical value
+     */
+    function triggerOneTimePaymentEvent(event) {
+        if (!triggerAnalyticEvents) {
+            return;
+        }
+
+        mdn.analytics.trackEvent({
+            category: 'payments',
+            action: event.action,
+            label: event.label,
+            value: event.value
+        });
+    }
+
     /**
      * Handles adjusting amount.
      * @param {jQuery.Event} event Event object.
@@ -147,8 +224,7 @@
             customAmountInput.val('');
 
             // Send GA Event.
-            mdn.analytics.trackEvent({
-                category: 'payments',
+            triggerOneTimePaymentEvent({
                 action: 'banner',
                 label: 'Amount radio selected',
                 value: event.target.value * 100
@@ -175,11 +251,8 @@
     function setFieldError(field) {
         $(field).addClass('error');
         $(field).next('.errorlist').remove();
-
         var error = $(field).attr('data-error-message');
-
         $('<ul class="errorlist"><li>' + error + '</li></ul>').insertAfter($(field));
-
     }
 
     /**
@@ -233,7 +306,7 @@
                 setFieldError(customAmountInput);
             }
 
-            if (isRecurringPayment && recuringConfirmationCheckbox[0].checkValidity()) {
+            if (currrentPaymentForm === 'recurring' && recuringConfirmationCheckbox[0].checkValidity()) {
                 clearFieldError(recuringConfirmationCheckbox[0]);
             } else {
                 setFieldError(recuringConfirmationCheckbox[0]);
@@ -243,12 +316,22 @@
         }
 
         // Send GA Event.
-        mdn.analytics.trackEvent({
-            category: 'payments',
-            action: 'submission',
-            label: isPopoverBanner ? 'On pop over' : 'On FAQ page',
-            value: selectedAmount * 100
-        });
+        currrentPaymentForm === 'recurring'
+            ? triggerRecurringPaymentEvent({
+                action: 'Form completed',
+                value: selectedAmount * 100
+            }, true)
+            : triggerOneTimePaymentEvent({
+                action: 'submission',
+                label: isPopoverBanner ? 'On pop over' : 'On FAQ page',
+                value: selectedAmount * 100
+            });
+
+        if (requestUserLogin && currrentPaymentForm === 'recurring') {
+            requestUserLogin.classList.remove('hidden');
+            form.get(0).classList.add('hidden');
+            return;
+        }
 
         if (stripeHandler !== null) {
             // On success open Stripe Checkout modal.
@@ -263,8 +346,7 @@
                 closed: function() {
                     // Send GA Event.
                     if (!submitted) {
-                        mdn.analytics.trackEvent({
-                            category: 'payments',
+                        triggerOneTimePaymentEvent({
                             action: 'submission',
                             label: 'canceled'
                         });
@@ -331,7 +413,10 @@
      * also disables the submission button
      */
     function toggleScriptError() {
-        formButton.attr('disabled') ? formButton.removeAttr('disabled') : formButton.attr('disabled', 'true');
+        formButton.attr('disabled')
+            ? formButton.removeAttr('disabled')
+            : formButton.attr('disabled', 'true');
+
         formErrorMessage.toggle();
     }
 
@@ -344,7 +429,10 @@
         var smallDesktop = '(max-width: 1092px)';
 
         mediaQueryList = window.matchMedia(smallDesktop);
-        var initialExpandedClass = mediaQueryList.matches ? 'expanded-extend' : 'expanded';
+        var initialExpandedClass = mediaQueryList.matches
+        || currrentPaymentForm === 'recurring'
+            ? 'expanded-extend'
+            : 'expanded';
 
         popoverBanner.addClass(initialExpandedClass + ' is-expanding');
         popoverBanner.removeClass('is-collapsed');
@@ -374,11 +462,14 @@
             });
         });
 
-        mdn.analytics.trackEvent({
-            category: 'payments',
-            action: 'banner',
-            label: 'expand'
-        });
+        currrentPaymentForm === 'recurring'
+            ? triggerRecurringPaymentEvent({
+                action: 'banner expanded',
+            })
+            : triggerOneTimePaymentEvent({
+                action: 'banner',
+                label: 'expand',
+            });
     }
 
     /**
@@ -410,8 +501,7 @@
         });
 
         // Send GA Event.
-        mdn.analytics.trackEvent({
-            category: 'payments',
+        triggerOneTimePaymentEvent({
             action: 'banner',
             label: 'collapse',
         });
@@ -427,8 +517,7 @@
         popoverBanner.attr('aria-hidden', true);
 
         // Send GA Event.
-        mdn.analytics.trackEvent({
-            category: 'payments',
+        triggerOneTimePaymentEvent({
             action: 'banner',
             label: 'close',
         });
@@ -458,7 +547,23 @@
         }
     }
 
+    /**
+     * Builds correct URL param and directs to GitHub for authentication.
+     * @param {jQuery.Event} event Event object.
+     */
+    function redirectUserToLogin(event) {
+        event.preventDefault();
+        var gitHubLink = $(this).attr('href');
+        var gitHubNext = $(this).data('next');
+        var getFormFields = form.serialize();
+        gitHubLink += '&next=' + gitHubNext + '?' + encodeURIComponent(getFormFields);
+        window.location.href = encodeURI(gitHubLink);
+    }
+
     // Register event handlers and set things up.
+    if (requestUserLogin) {
+        $(githubRedirectButton).on('click', redirectUserToLogin);
+    }
     formButton.click(onFormButtonClick);
     amountRadio.change(onAmountSelect);
     customAmountInput.on('input', onAmountSelect);
@@ -468,15 +573,13 @@
         var value = parseFloat(event.target.value);
         if (!isNaN(value) && value >= 1) {
             // Send GA Event.
-            mdn.analytics.trackEvent({
-                category: 'payments',
+            triggerOneTimePaymentEvent({
                 action: 'banner',
                 label: 'custom amount',
                 value: Math.floor(value * 100)
             });
         } else {
-            mdn.analytics.trackEvent({
-                category: 'payments',
+            triggerOneTimePaymentEvent({
                 action: 'banner',
                 label: 'Invalid amount selected',
             });
@@ -484,7 +587,7 @@
     });
 
     // Clear validation for checkbox confirmation
-    if (isRecurringPayment) {
+    if (currrentPaymentForm === 'recurring') {
         recuringConfirmationCheckbox.change(function() {
             clearFieldError(recuringConfirmationCheckbox[0]);
         });
@@ -494,13 +597,90 @@
         closeButton.click(disablePopover);
     }
 
+    /**
+     * Runs when the payment switch changes
+     * Toggles the payment type between one-time or recurring payments
+     * Updates the form action and method to post to the correct view
+     * Updated the visual styling between one-time and recurring
+     * Updates the state of the form
+     */
+    function switchPaymentTypeHandler() {
+        var action = form.get(0).getAttribute('action');
+
+        if (this.value === 'one_time' && currrentPaymentForm === 'recurring') {
+            // Switch to one-time payment form only if we're not on the one-time payment form already.
+            currrentPaymentForm = 'one_time';
+
+            // Ensure we show the form and don't request login
+            if (requestUserLogin) {
+                requestUserLogin.classList.add('hidden');
+                form.get(0).classList.remove('hidden');
+            }
+
+            // Hide the checkbox and mark as not required
+            recuringConfirmationCheckbox.get(0).removeAttribute('required');
+            recurringConfirmationContainer.classList.add('hidden');
+
+            // Change the form action to submit to the one-time payment view
+            action = form.get(0).getAttribute('data-one-time-action');
+            [].forEach.call(amountRadioInputs, function(radio, i) {
+                radio.setAttribute('value', donationChoices.oneTime[i]);
+                radio.nextSibling.nodeValue = '$' + donationChoices.oneTime[i];
+            });
+
+            // Visually update the form
+            form.get(0).classList.remove('recurring-form');
+            popoverBanner.get(0).classList.add('expanded');
+            popoverBanner.get(0).classList.remove('expanded-extend');
+
+        } else if (this.value === 'recurring' && currrentPaymentForm === 'one_time') {
+            // Switch to recurring payment form only if we're not on the recurring payment form already.
+            currrentPaymentForm = 'recurring';
+
+            // Show the confirmation checkbox and mark as required
+            recurringConfirmationContainer.classList.remove('hidden');
+            recuringConfirmationCheckbox.get(0).setAttribute('required', '');
+
+            // Change the form action to submit to the recurring subscription view
+            action = form.get(0).getAttribute('data-recurring-action');
+            [].forEach.call(amountRadioInputs, function(radio, i) {
+                radio.setAttribute('value', donationChoices.recurring[i]);
+                radio.nextSibling.nodeValue = '$' + donationChoices.recurring[i] + '/mo';
+            });
+
+            // Visually update the form
+            form.get(0).classList.add('recurring-form');
+            popoverBanner.get(0).classList.add('expanded-extend');
+        }
+
+        // Update the form action
+        form.get(0).setAttribute('action', action);
+    }
+
+    if (hasPaymentSwitch) {
+        [].forEach.call(paymentTypeSwitch, function(radio) {
+            radio.addEventListener('change', switchPaymentTypeHandler);
+        });
+
+        // Force options for popover
+        if (currrentPaymentForm === 'recurring') {
+            [].forEach.call(amountRadioInputs, function(radio, i) {
+                radio.setAttribute('value', donationChoices.recurring[i]);
+                radio.nextSibling.nodeValue = '$' + donationChoices.recurring[i] + '/mo';
+            });
+        }
+    }
+
     // Send to GA if popover is displayed.
     if (popoverBanner && popoverBanner.is(':visible')) {
-        mdn.analytics.trackEvent({
-            category: 'payments',
-            action: 'banner',
-            label: 'shown',
-        });
+        currrentPaymentForm === 'recurring'
+            ? triggerRecurringPaymentEvent({
+                action: 'banner shown',
+            })
+            : triggerOneTimePaymentEvent({
+                action: 'banner',
+                label: 'shown',
+            });
     }
 
 })(document, window, jQuery);
